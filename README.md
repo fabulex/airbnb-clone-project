@@ -112,5 +112,38 @@ The database for the Airbnb Clone backend is designed using a relational model i
 
 This design supports efficient joins for queries like "fetch all bookings for a property with guest details" and includes indexes on foreign keys (e.g., host_id, property_id) and frequent search fields (e.g., location, email) for performance. Future extensions could include many-to-many relationships, such as user wishlists for properties.
 
+## API Security
+1. Authentication  
+- Implementation: Token-based authentication using JSON Web Tokens (JWT) via djangorestframework-simplejwt. Users must authenticate via /auth/login/ or /auth/register/ endpoints, receiving a short-lived access token and refresh token. All protected endpoints require a valid Authorization: Bearer <token> header. GraphQL queries/mutations enforce the same via middleware.  
+- Why Crucial: Prevents unauthorized access to personal data (e.g., user profiles, booking history). In an Airbnb-like system, unauthenticated requests could expose hosts' property details or guests' travel plans, leading to privacy violations or stalking risks.
 
-(Planned)
+2. Authorization  
+- Implementation: Role-based access control (RBAC) using Django's permission classes in DRF (e.g., IsAuthenticated, custom IsHostOrReadOnly for properties). For example, only the property's host can update/delete it (PUT/DELETE /properties/{id}/), while guests can only read or book. GraphQL uses context-based resolvers to enforce permissions. Foreign key checks in models prevent cross-user data manipulation.  
+- Why Crucial: Ensures users can only interact with their own data, protecting against privilege escalation. For instance, a malicious user couldn't alter another host's listings or view competitors' earnings, safeguarding business integrity and preventing disputes.
+
+3. Rate Limiting  
+- Implementation: Applied via django-ratelimit on high-risk endpoints (e.g., login attempts limited to 5/hour per IP, booking creation to 10/day per user). Redis is used as the backend for distributed rate limiting in a scaled environment. Global limits (e.g., 100 requests/minute) prevent API abuse.  
+- Why Crucial: Mitigates denial-of-service (DoS) attacks and brute-force attempts on authentication. In a booking system, unchecked requests could overwhelm servers during peak times (e.g., holidays), causing downtime and lost revenue.
+
+4. Input Validation and Sanitization  
+- Implementation: DRF serializers enforce strict validation (e.g., email format, date ranges for bookings). SQL injection is prevented via Django's ORM query parameterization. XSS/CSRF risks are handled with CSRF tokens in non-API views and output escaping in responses. File uploads (e.g., property images) are scanned and stored securely on cloud storage (e.g., AWS S3 with signed URLs).  
+- Why Crucial: Blocks malicious payloads that could compromise the database or frontend. For user data entry (e.g., reviews), invalid inputs could lead to injection attacks, exposing PII like addresses in property locations.
+
+5. Data Encryption and Secure Transmission  
+- Implementation: All traffic enforced over HTTPS via Django's SECURE_SSL_REDIRECT. Sensitive fields (e.g., passwords) are hashed with PBKDF2/Argon2; payment details are never stored—integrated with Stripe for tokenization. Database connections use SSL, and Redis sessions are encrypted.  
+- Why Crucial: Protects payments from interception (e.g., man-in-the-middle attacks), ensuring PCI compliance. For an app handling financials and travel data, unencrypted transmissions could result in fraud, identity theft, or regulatory fines.
+
+6. Auditing and Monitoring  
+- Implementation: Celery tasks log all critical actions (e.g., booking confirmations) to a secure audit trail. Integration with tools like Sentry for error tracking and Prometheus for anomaly detection. Regular security audits via bandit for code scans.  
+- Why Crucial: Enables quick incident response and forensic analysis. In reviews or payments, undetected anomalies could allow fraud (e.g., fake bookings), eroding trust and leading to legal liabilities.
+
+Security for Key Project Areas
+- User Management: Authentication and authorization protect profiles from unauthorized views/edits, crucial for privacy (e.g., GDPR compliance on emails and photos).  
+- Property Management: RBAC prevents tampering with listings, vital for hosts' revenue and accurate search results.  
+- Booking System: Rate limiting and validation secure reservations, avoiding overbooking exploits or spam that could disrupt availability.  
+- Payment Processing: Encryption and non-storage of card data ensure secure transactions, preventing chargeback fraud and maintaining financial trust.  
+- Review System: Sanitization stops spam or abusive content, fostering a reliable feedback ecosystem without defamation risks.
+
+
+
+## CI/CD Pipeline (Planned)
