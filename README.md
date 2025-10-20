@@ -144,6 +144,18 @@ Security for Key Project Areas
 - Payment Processing: Encryption and non-storage of card data ensure secure transactions, preventing chargeback fraud and maintaining financial trust.  
 - Review System: Sanitization stops spam or abusive content, fostering a reliable feedback ecosystem without defamation risks.
 
+## CI/CD Pipeline
+CI/CD (Continuous Integration/Continuous Deployment) pipelines automate the software development lifecycle, enabling faster, more reliable releases while minimizing human error. In the context of the Airbnb Clone project, CI/CD is crucial for maintaining code quality in a collaborative environment: It catches bugs early through automated testing, ensures consistent deployments across development, staging, and production, and supports scalability as the team grows. By integrating with our GitHub repository, pipelines facilitate rapid iterations on features like booking APIs or payment integrations, reducing downtime and accelerating time-to-market for updates.
 
+Key Components and Workflow
 
-## CI/CD Pipeline (Planned)
+1. Continuous Integration (CI): On every pull request or push to the main branch, the pipeline runs unit/integration tests (using pytest and Django's test suite), linters (e.g., flake8 for Python style), and security scans (e.g., bandit for vulnerabilities). This ensures that new code doesn't break existing functionality, such as property listing endpoints.
+2. Continuous Deployment (CD): Upon successful CI, the pipeline builds Docker images, runs database migrations, and deploys to environments (e.g., staging via Heroku, production via AWS ECS). Rollback mechanisms handle failures, critical for high-availability services like real-time booking confirmations.
+
+Tools and Integration
+
+1. GitHub Actions: Primary orchestrator for workflows, defining YAML-based pipelines triggered by repository events. Example: A .github/workflows/ci.yml file for testing and .github/workflows/cd.yml for deployments.
+2. Docker: Containerizes the Django app, PostgreSQL database, and services like Redis/Celery for reproducible builds and easy orchestration.
+3. pytest and Coverage.py: For comprehensive testing and code coverage reports (>80% threshold enforced).
+4. Sentry: Integrates for error monitoring post-deployment, alerting on issues like failed payment processes.
+AWS CodeBuild/CodeDeploy (or alternatives like Jenkins): For cloud-based builds and blue-green deployments in production.
