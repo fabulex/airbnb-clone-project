@@ -54,7 +54,7 @@ Caching: Use caching strategies to reduce database load and improve performance.
 ## Database Design
 The database for the Airbnb Clone backend is designed using a relational model in PostgreSQL. It emphasizes normalization to reduce redundancy, efficient querying through indexing, and scalability for high-traffic scenarios. Below, we outline the key entities, their important fields (focusing on 3-5 core attributes per entity), and the relationships between them. These entities capture the core data for user management, property listings, bookings, reviews, and payments.
 
-###Entities and Fields
+Entities and Fields
 1. Users - Represents registered users, who can act as guests (booking properties) or hosts (listing properties).
 
 - id: Primary key (UUID or Auto-increment integer) – Unique identifier for the user.
